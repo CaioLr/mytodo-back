@@ -6,62 +6,82 @@ use App\Models\Board;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBoardRequest;
 use App\Http\Requests\UpdateBoardRequest;
+use Illuminate\Http\Request;
 
 class BoardController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    public function findAll()
     {
-        //
+        try {
+            $response = Board::get();
+        } catch (\Throwable $th) {
+            return "Erro ao realizar a busca.";
+        }
+        return $response;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function findOne(Request $req)
     {
-        //
+        try {
+            $id = $req->get('id');
+            $response = Board::where('id',$id)->get();
+        } catch (\Throwable $th) {
+            return "Erro ao realizar a(s) busca(s).";
+        }
+        return $response;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreBoardRequest $request)
+    public function store(Request $req)
     {
-        //
+        try{
+            $board = new Board();
+            $board->user_id = $req->uuid;
+            $board->name = $req->name;
+
+            $res = $board->save();
+
+            if($res){
+                return 'Registro(s) inseridos com sucesso!';
+            }
+            return 'Erro ao inserir registro(s).'; //caso ocorra erro ao inserir no BD
+
+        } catch (\Throwable $th) {
+            return "Erro ao inserir registro(s).";
+            // return $th;
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Board $board)
+
+
+    public function update(Request $req)
     {
-        //
+        try {
+            $id =$req->get('id');
+            $name = $req->get('name');
+           
+            Board::where('id',$id)->update(['name' => $name]);
+
+        } catch (\Throwable $th) {
+            return "Erro ao atualizar o(s) registro(s).";
+        }
+        return "Registro(s) atualizados com sucesso!";
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Board $board)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBoardRequest $request, Board $board)
+    public function delete(Request $req)
     {
-        //
-    }
+        try {
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Board $board)
-    {
-        //
+            $id =$req->get('id');
+
+            if (Board::where('id', $id)->get() == '[]') return "Erro ao deletar o(s) registro(s).";
+
+            Board::where('id', $id)->delete();
+
+        } catch (\Throwable $th) {
+            return "Erro ao deletar o(s) registro(s).";
+        }
+        return "Registro(s) deletados com sucesso!";
     }
 }
